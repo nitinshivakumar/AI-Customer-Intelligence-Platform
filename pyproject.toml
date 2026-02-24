@@ -1,0 +1,15 @@
+[project]
+name = "ai-customer-intelligence-platform"
+version = "1.0.0"
+description = "Production AI platform: churn, anomaly, LLM insights, MLOps"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

@@ -1,0 +1,10 @@
+artifact_location: /Users/nitin/Documents/MS in Data Science/Nitin Portfolio/ai-customer-intelligence-platform/mlruns/645263210582554289/models/m-285d4771e6a84fa08e6106b75ff3817e/artifacts
+creation_timestamp: 1771905995894
+experiment_id: '645263210582554289'
+last_updated_timestamp: 1771905998192
+model_id: m-285d4771e6a84fa08e6106b75ff3817e
+model_type: null
+name: model
+source_run_id: 629109d628f14753b8d216dfa51a67f6
+status: 2
+status_message: null

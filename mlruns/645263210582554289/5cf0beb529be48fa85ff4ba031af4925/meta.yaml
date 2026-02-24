@@ -1,0 +1,14 @@
+artifact_uri: /Users/nitin/Documents/MS in Data Science/Nitin Portfolio/ai-customer-intelligence-platform/mlruns/645263210582554289/5cf0beb529be48fa85ff4ba031af4925/artifacts
+end_time: 1771906007158
+entry_point_name: ''
+experiment_id: '645263210582554289'
+lifecycle_stage: active
+run_id: 5cf0beb529be48fa85ff4ba031af4925
+run_name: churn_xgboost
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1771906004787
+status: 3
+tags: []
+user_id: nitin
