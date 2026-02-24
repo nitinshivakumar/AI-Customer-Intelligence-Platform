@@ -18,7 +18,83 @@ Raw Data → Data Pipeline → Feature Store → Model Training
         Monitoring (Drift + Logs + Metrics)
 ```
 
-## Quick Start
+## How to run (step-by-step)
+
+**From the project root** (`ai-customer-intelligence-platform/`):
+
+```bash
+# 1. Environment
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# 2. Data pipeline (generates synthetic customers, ETL, features)
+python -m src.data.generate_data
+python -m src.data.etl_pipeline
+python -m src.features.build_features
+
+# 3. Train models (churn, anomaly, bias tests → MLflow)
+python -m src.training.train_churn --model xgboost
+python -m src.training.train_anomaly
+python -m src.training.run_bias_tests   # optional; needs fairlearn
+
+# 4. Start the API
+uvicorn api.main:app --host 0.0.0.0 --port 8000
+# → Open http://localhost:8000/docs for Swagger UI
+
+# 5. (Optional) Start the Streamlit dashboard (in another terminal)
+streamlit run dashboard/app.py
+```
+
+**Using Make:**
+
+```bash
+make install    # pip install
+make data      # generate + ETL + features
+make train     # churn + anomaly + bias
+make api       # start API on port 8000
+make dashboard # start Streamlit
+```
+
+**Quick run with fewer customers:**
+
+```bash
+SAMPLE_CUSTOMERS=500 python -m src.data.generate_data
+# then ETL and features as above
+```
+
+---
+
+## How it works (explanation)
+
+**High-level flow**
+
+1. **Data** — `generate_data` creates synthetic customers, transactions, sessions, support tickets, and churn labels.  
+2. **ETL** — `etl_pipeline` loads that data into SQLite (or PostgreSQL via `DATABASE_URL`).  
+3. **Features** — `build_features` computes RFM, rolling-window usage, and time aggregates, then writes to a file-based feature store under `data/feature_store/`.  
+4. **Training** — `train_churn` (XGBoost/LogReg/LightGBM) and `train_anomaly` (Isolation Forest) train on those features; runs are logged to MLflow in `mlruns/`.  
+5. **Bias tests** — `run_bias_tests` uses Fairlearn on age/gender/region and logs fairness metrics to MLflow.  
+6. **API** — FastAPI loads the saved churn and anomaly models and serves `/predict`, `/explain`, `/anomaly`, `/insight`, plus `/health` and `/metrics`.  
+7. **Dashboard** — Streamlit calls the API to show predictions, metrics, and model performance.
+
+**What each endpoint does**
+
+| Endpoint | Input | Output |
+|----------|--------|--------|
+| `POST /predict` | `{"features": {"recency_days": 30, "tx_frequency": 5, ...}}` | Churn probability and 0/1 label. |
+| `POST /explain` | Same feature dict. | Churn probability + SHAP contributions per feature. |
+| `POST /anomaly` | Usage feature dict. | Anomaly score (higher = more anomalous) and `is_anomaly`. |
+| `POST /insight` | `{"customer_id", "churn_probability", "profile": {...}}` | LLM risk summary and retention strategy (OpenAI or mock). |
+| `GET /health` | — | `{"status": "ok"}`. |
+| `GET /metrics` | — | Prometheus metrics. |
+
+**Try the API**
+
+After starting the API, open **http://localhost:8000/docs**. From there you can call `/predict`, `/explain`, `/anomaly`, and `/insight` with sample JSON. The API fills missing features with 0, so you can send a minimal payload like `{"features": {"recency_days": 60, "tx_frequency": 2}}` for `/predict`.
+
+---
+
+## Quick Start (reference)
 
 ```bash
 # Create venv and install
